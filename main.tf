@@ -22,16 +22,6 @@ data "terraform_remote_state" "penny" {
   }
 }
 
-data "terraform_remote_state" "llm" {
-  backend = "azurerm"
-  config = {
-    resource_group_name  = "az-llm-aks-tfstate-rg"
-    storage_account_name = "azllmakstf0673"
-    container_name       = "tfstate"
-    key                  = "dev-base.terraform.tfstate"
-    use_azuread_auth     = true
-  }
-}
 
 resource "azurerm_resource_group" "dns" {
   name     = var.resource_group_name
@@ -56,7 +46,7 @@ resource "azurerm_dns_a_record" "llm" {
   zone_name           = azurerm_dns_zone.mysak_fun.name
   resource_group_name = azurerm_resource_group.dns.name
   ttl                 = 300
-  records             = [data.terraform_remote_state.llm.outputs.control_plane_ip]
+  records             = ["20.230.229.131"]
 }
 
 resource "azurerm_dns_txt_record" "penny_verification" {
