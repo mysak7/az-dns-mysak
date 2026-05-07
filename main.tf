@@ -11,6 +11,17 @@ provider "azurerm" {
   features {}
 }
 
+data "terraform_remote_state" "penny" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = "azure-penny-tfstate-rg"
+    storage_account_name = "azurepennytff04cd1"
+    container_name       = "tfstate"
+    key                  = "azure-penny.tfstate"
+    use_azuread_auth     = true
+  }
+}
+
 resource "azurerm_resource_group" "dns" {
   name     = var.resource_group_name
   location = var.location
@@ -26,7 +37,7 @@ resource "azurerm_dns_cname_record" "penny" {
   zone_name           = azurerm_dns_zone.mysak_fun.name
   resource_group_name = azurerm_resource_group.dns.name
   ttl                 = 300
-  record              = "ca-prd-eus-penny.thankfulsand-fdb51b76.eastus.azurecontainerapps.io"
+  record              = data.terraform_remote_state.penny.outputs.container_app_fqdn
 }
 
 resource "azurerm_dns_txt_record" "penny_verification" {
