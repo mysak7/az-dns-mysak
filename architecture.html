@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>az-dns-mysak Architecture</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 32px 24px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 40px;
+    }
+
+    /* ── Layout columns ── */
+    .diagram {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .col-registrar  { width: 180px; }
+    .col-connector  { width: 60px;  align-self: center; }
+    .col-azure      { width: 320px; }
+    .col-targets    { width: 340px; gap: 20px; }
+
+    /* ── Connector lines ── */
+    .connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #475569;
+      font-size: 0.65rem;
+      gap: 4px;
+    }
+    .connector .line {
+      width: 2px;
+      height: 20px;
+      background: #334155;
+    }
+    .connector .hline {
+      width: 100%;
+      height: 2px;
+      background: #334155;
+    }
+    .connector .arrow { font-size: 14px; color: #475569; }
+    .h-connector {
+      display: flex;
+      align-items: center;
+      color: #475569;
+      font-size: 0.65rem;
+      gap: 4px;
+      align-self: center;
+      flex: 0 0 auto;
+    }
+    .h-connector .hline {
+      width: 40px;
+      height: 2px;
+      background: #334155;
+    }
+    .h-connector .arrow { font-size: 14px; color: #475569; }
+
+    /* ── Cards ── */
+    .card {
+      background: #1e2433;
+      border: 1px solid #2d3748;
+      border-radius: 12px;
+      padding: 16px 20px;
+      width: 100%;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .icon-wedos    { background: #1a3a5c; }
+    .icon-azure    { background: #0e2d4a; }
+    .icon-tf       { background: #2d1b4e; }
+    .icon-dns      { background: #0f2e1a; }
+    .icon-record   { background: #1a2a0e; }
+    .icon-aks      { background: #0e1f3a; }
+    .icon-app      { background: #1a1a0e; }
+    .icon-state    { background: #2d2010; }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .card-subtitle {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    /* ── Badge strip ── */
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .badge {
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .badge-blue   { background: #1e3a5f; color: #7dd3fc; border: 1px solid #1d4ed8; }
+    .badge-green  { background: #14391c; color: #86efac; border: 1px solid #166534; }
+    .badge-purple { background: #2d1b5c; color: #c4b5fd; border: 1px solid #5b21b6; }
+    .badge-orange { background: #3d2000; color: #fdba74; border: 1px solid #92400e; }
+    .badge-red    { background: #3d1010; color: #fca5a5; border: 1px solid #991b1b; }
+    .badge-gray   { background: #1e2433; color: #94a3b8; border: 1px solid #334155; }
+
+    /* ── DNS records table ── */
+    .records-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+      margin-top: 4px;
+    }
+
+    .records-table th {
+      text-align: left;
+      color: #475569;
+      font-weight: 600;
+      padding: 4px 6px;
+      border-bottom: 1px solid #2d3748;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .records-table td {
+      padding: 5px 6px;
+      border-bottom: 1px solid #1a2030;
+      color: #cbd5e1;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+    }
+
+    .records-table tr:last-child td { border-bottom: none; }
+
+    .type-a      { color: #7dd3fc; }
+    .type-cname  { color: #86efac; }
+    .type-txt    { color: #fdba74; }
+
+    .todo { color: #f87171; font-style: italic; }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #475569;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    /* ── Terraform state note ── */
+    .state-note {
+      font-size: 0.68rem;
+      color: #94a3b8;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #2d3748;
+    }
+
+    .state-note code {
+      font-family: monospace;
+      color: #c4b5fd;
+      font-size: 0.68rem;
+    }
+
+    /* ── Target cards (right column) ── */
+    .target-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .target-card {
+      background: #161c2a;
+      border: 1px solid #2d3748;
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+
+    .target-card.aks   { border-left: 3px solid #3b82f6; }
+    .target-card.penny { border-left: 3px solid #22c55e; }
+    .target-card.cloud { border-left: 3px solid #f59e0b; }
+
+    .target-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+    }
+
+    .target-detail {
+      font-size: 0.68rem;
+      color: #64748b;
+      font-family: monospace;
+      word-break: break-all;
+    }
+
+    .target-repo {
+      font-size: 0.65rem;
+      color: #475569;
+      margin-top: 6px;
+    }
+
+    .target-repo a {
+      color: #7dd3fc;
+      text-decoration: none;
+    }
+
+    /* ── Infra meta strip ── */
+    .meta-strip {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .meta-item {
+      font-size: 0.68rem;
+      color: #64748b;
+    }
+
+    .meta-item span {
+      color: #94a3b8;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      max-width: 1100px;
+      margin: 36px auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .diagram { flex-direction: column; align-items: center; }
+      .h-connector { transform: rotate(90deg); margin: 4px 0; }
+      .col-registrar, .col-azure, .col-targets { width: 100%; max-width: 420px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>az-dns-mysak · Architecture</h1>
+  <p class="subtitle">Azure DNS for mysak.fun — managed by Terraform · Region: West Europe</p>
+
+  <div class="diagram">
+
+    <!-- ── Column 1: Domain Registrar ── -->
+    <div class="col col-registrar">
+      <div class="section-label">Registrar</div>
+      <div class="card">
+        <div class="card-header">
+          <div class="icon icon-wedos">🌐</div>
+          <div>
+            <div class="card-title">WEDOS</div>
+            <div class="card-subtitle">mysak.fun registrar</div>
+          </div>
+        </div>
+        <div class="badge-row">
+          <span class="badge badge-gray">NS delegation</span>
+        </div>
+        <div class="state-note">
+          Nameservers point to<br/>
+          <code>azuredns.com</code><br/>
+          (output: <code>nameservers</code>)
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Connector ── -->
+    <div class="h-connector">
+      <div class="hline"></div>
+      <div class="arrow">→</div>
+    </div>
+
+    <!-- ── Column 2: Azure DNS ── -->
+    <div class="col col-azure">
+      <div class="section-label">Azure · rg-dns-mysak-fun · West Europe</div>
+
+      <!-- Terraform -->
+      <div class="card">
+        <div class="card-header">
+          <div class="icon icon-tf">🏗️</div>
+          <div>
+            <div class="card-title">Terraform</div>
+            <div class="card-subtitle">azurerm ~3.0 · local state</div>
+          </div>
+        </div>
+        <div class="badge-row">
+          <span class="badge badge-purple">IaC</span>
+          <span class="badge badge-gray">main.tf / variables.tf</span>
+        </div>
+        <div class="state-note">
+          Reads remote state from <code>azure-penny</code><br/>
+          Storage: <code>azurepennytff04cd1</code> / <code>tfstate</code>
+        </div>
+      </div>
+
+      <!-- DNS Zone -->
+      <div class="card">
+        <div class="card-header">
+          <div class="icon icon-dns">🔷</div>
+          <div>
+            <div class="card-title">azurerm_dns_zone</div>
+            <div class="card-subtitle">mysak.fun</div>
+          </div>
+        </div>
+        <div class="badge-row">
+          <span class="badge badge-blue">Azure DNS</span>
+          <span class="badge badge-gray">TTL 300</span>
+        </div>
+
+        <!-- Records table -->
+        <table class="records-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Value / Target</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>penny</td>
+              <td><span class="type-cname">CNAME</span></td>
+              <td>← remote state output</td>
+            </tr>
+            <tr>
+              <td>asuid.penny</td>
+              <td><span class="type-txt">TXT</span></td>
+              <td>24C4FD8D…</td>
+            </tr>
+            <tr>
+              <td>llm</td>
+              <td><span class="type-a">A</span></td>
+              <td>20.230.229.131</td>
+            </tr>
+            <tr>
+              <td>grafana.llm</td>
+              <td><span class="type-cname">CNAME</span></td>
+              <td>llm.mysak.fun</td>
+            </tr>
+            <tr>
+              <td>cloudfire</td>
+              <td><span class="type-cname">CNAME</span></td>
+              <td class="todo">TODO (zone file only)</td>
+            </tr>
+            <tr>
+              <td>asuid.cloudfire</td>
+              <td><span class="type-txt">TXT</span></td>
+              <td class="todo">TODO (zone file only)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="state-note">
+          <code>mysak.fun.zone</code> — Cloudflare import format<br/>
+          (alternative / migration reference)
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Connector ── -->
+    <div class="h-connector">
+      <div class="hline"></div>
+      <div class="arrow">→</div>
+    </div>
+
+    <!-- ── Column 3: Targets ── -->
+    <div class="col col-targets">
+      <div class="section-label">Resolved Targets</div>
+
+      <div class="target-group">
+
+        <!-- AKS LLM -->
+        <div class="target-card aks">
+          <div class="card-header" style="margin-bottom:6px">
+            <div class="icon icon-aks" style="width:28px;height:28px;font-size:14px;">☸️</div>
+            <div>
+              <div class="target-title">AKS LLM Cluster</div>
+              <div class="target-detail">20.230.229.131 (static pip-dev-wus2-llm)</div>
+            </div>
+          </div>
+          <div class="badge-row">
+            <span class="badge badge-blue">llm.mysak.fun</span>
+            <span class="badge badge-blue">grafana.llm.mysak.fun</span>
+          </div>
+          <div class="target-repo">
+            repo: <a>az-llm-aks</a> · IP survives nightly cluster destroy
+          </div>
+        </div>
+
+        <!-- penny / Container Apps -->
+        <div class="target-card penny">
+          <div class="card-header" style="margin-bottom:6px">
+            <div class="icon icon-app" style="width:28px;height:28px;font-size:14px;">📦</div>
+            <div>
+              <div class="target-title">Azure Container Apps</div>
+              <div class="target-detail">ca-prd-eus-penny.thankfulisland-4131bb98.eastus.azurecontainerapps.io</div>
+            </div>
+          </div>
+          <div class="badge-row">
+            <span class="badge badge-green">penny.mysak.fun</span>
+          </div>
+          <div class="target-repo">
+            repo: <a>azure-penny</a> · FQDN via remote state output
+          </div>
+        </div>
+
+        <!-- cloudfire -->
+        <div class="target-card cloud">
+          <div class="card-header" style="margin-bottom:6px">
+            <div class="icon icon-app" style="width:28px;height:28px;font-size:14px;">🔥</div>
+            <div>
+              <div class="target-title">Azure App Service (cloudfire)</div>
+              <div class="target-detail todo">PLACEHOLDER — run terraform output in az-networking-lab</div>
+            </div>
+          </div>
+          <div class="badge-row">
+            <span class="badge badge-orange">cloudfire.mysak.fun</span>
+            <span class="badge badge-red">TODO</span>
+          </div>
+          <div class="target-repo">
+            repo: <a>az-networking-lab/3-cloudfire-web-app</a>
+          </div>
+        </div>
+
+        <!-- Grafana (sub-target) -->
+        <div class="target-card aks" style="border-left-color:#a855f7">
+          <div class="card-header" style="margin-bottom:6px">
+            <div class="icon icon-aks" style="width:28px;height:28px;font-size:14px;">📊</div>
+            <div>
+              <div class="target-title">Grafana</div>
+              <div class="target-detail">grafana.llm.mysak.fun → llm.mysak.fun → 20.230.229.131</div>
+            </div>
+          </div>
+          <div class="badge-row">
+            <span class="badge badge-purple">CNAME chain</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /diagram -->
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#7dd3fc"></div> A record</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div> CNAME record</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fdba74"></div> TXT record</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div> Terraform IaC</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div> Pending / TODO</div>
+    <div class="legend-item" style="margin-left:12px; color:#475569; font-size:0.68rem;">
+      Generated 2026-05-12 · repo: az-dns-mysak
+    </div>
+  </div>
+
+</body>
+</html>
