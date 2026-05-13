@@ -25,3 +25,9 @@ aks-llm         300  IN  A      20.230.229.131
 ; ── cloudfire (Azure App Service — mi-3-cloudfire-rg) ───────────────────────
 cloudfire       300  IN  CNAME  mi-3-cloudfire-y29hf3.azurewebsites.net.
 asuid.cloudfire 300  IN  TXT    "24C4FD8D3A8507E43D386A411379665BC15579939C271A26E15AE5643A8A540A"
+
+; ── docs (Azure Container Apps — az-mongo) ───────────────────────────────────
+; DNS only (no Cloudflare proxy — Container Apps custom domain verification requires direct CNAME)
+; TODO: replace placeholders below after first `terraform apply` of az-mongo
+docs            300  IN  CNAME  <placeholder — fill after first tf apply of az-mongo>.azurecontainerapps.io.
+asuid.docs      300  IN  TXT    "<placeholder — fill after first tf apply of az-mongo>"

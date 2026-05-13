@@ -85,6 +85,35 @@ resource "azurerm_dns_txt_record" "cloudfire_verification" {
   }
 }
 
+data "terraform_remote_state" "mongo" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = "az-mongo-tfstate-rg"
+    storage_account_name = "azumongotfstate"
+    container_name       = "tfstate"
+    key                  = "az-mongo.tfstate"
+    use_azuread_auth     = true
+  }
+}
+
+resource "azurerm_dns_cname_record" "docs" {
+  name                = "docs"
+  zone_name           = azurerm_dns_zone.mysak_fun.name
+  resource_group_name = azurerm_resource_group.dns.name
+  ttl                 = 300
+  record              = data.terraform_remote_state.mongo.outputs.container_app_fqdn
+}
+
+resource "azurerm_dns_txt_record" "docs_verification" {
+  name                = "asuid.docs"
+  zone_name           = azurerm_dns_zone.mysak_fun.name
+  resource_group_name = azurerm_resource_group.dns.name
+  ttl                 = 300
+  record {
+    value = data.terraform_remote_state.mongo.outputs.container_app_domain_verification_id
+  }
+}
+
 output "nameservers" {
   value       = azurerm_dns_zone.mysak_fun.name_servers
   description = "Nameservery ke zkopírování do WEDOS"
