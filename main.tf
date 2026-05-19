@@ -4,7 +4,15 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
   }
+}
+
+provider "aws" {
+  region = "eu-central-1"
 }
 
 provider "azurerm" {
@@ -112,6 +120,36 @@ resource "azurerm_dns_txt_record" "docs_verification" {
   record {
     value = data.terraform_remote_state.mongo.outputs.container_app_domain_verification_id
   }
+}
+
+data "terraform_remote_state" "aws_penny" {
+  backend = "s3"
+  config = {
+    bucket = "seip-terraform-state-dev"
+    key    = "aws-penny/terraform.tfstate"
+    region = "eu-central-1"
+  }
+}
+
+resource "azurerm_dns_cname_record" "aws_penny" {
+  name                = "aws-penny"
+  zone_name           = azurerm_dns_zone.mysak_fun.name
+  resource_group_name = azurerm_resource_group.dns.name
+  ttl                 = 300
+  record              = data.terraform_remote_state.aws_penny.outputs.app_runner_service_url
+}
+
+resource "azurerm_dns_cname_record" "aws_penny_cert_validation" {
+  for_each = {
+    for r in data.terraform_remote_state.aws_penny.outputs.custom_domain_validation_records :
+    r.name => r
+  }
+
+  name                = replace(each.value.name, ".mysak.fun", "")
+  zone_name           = azurerm_dns_zone.mysak_fun.name
+  resource_group_name = azurerm_resource_group.dns.name
+  ttl                 = 300
+  record              = each.value.value
 }
 
 output "nameservers" {
