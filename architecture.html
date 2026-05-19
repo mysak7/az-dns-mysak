@@ -365,8 +365,8 @@
           <span class="badge badge-gray">main.tf / variables.tf</span>
         </div>
         <div class="state-note">
-          Reads remote state from <code>azure-penny</code><br/>
-          Storage: <code>azurepennytff04cd1</code> / <code>tfstate</code>
+          Reads remote state from <code>azure-penny</code> (azurepennytff04cd1)<br/>
+          and <code>az-mongo</code> (azumongotfstate) / <code>tfstate</code>
         </div>
       </div>
 
@@ -417,12 +417,22 @@
             <tr>
               <td>cloudfire</td>
               <td><span class="type-cname">CNAME</span></td>
-              <td class="todo">TODO (zone file only)</td>
+              <td>mi-3-cloudfire-y29hf3.azurewebsites.net</td>
             </tr>
             <tr>
               <td>asuid.cloudfire</td>
               <td><span class="type-txt">TXT</span></td>
-              <td class="todo">TODO (zone file only)</td>
+              <td>24C4FD8D…</td>
+            </tr>
+            <tr>
+              <td>docs</td>
+              <td><span class="type-cname">CNAME</span></td>
+              <td>← az-mongo remote state</td>
+            </tr>
+            <tr>
+              <td>asuid.docs</td>
+              <td><span class="type-txt">TXT</span></td>
+              <td>← az-mongo remote state</td>
             </tr>
           </tbody>
         </table>
@@ -487,15 +497,31 @@
             <div class="icon icon-app" style="width:28px;height:28px;font-size:14px;">🔥</div>
             <div>
               <div class="target-title">Azure App Service (cloudfire)</div>
-              <div class="target-detail todo">PLACEHOLDER — run terraform output in az-networking-lab</div>
+              <div class="target-detail">mi-3-cloudfire-y29hf3.azurewebsites.net</div>
             </div>
           </div>
           <div class="badge-row">
             <span class="badge badge-orange">cloudfire.mysak.fun</span>
-            <span class="badge badge-red">TODO</span>
           </div>
           <div class="target-repo">
             repo: <a>az-networking-lab/3-cloudfire-web-app</a>
+          </div>
+        </div>
+
+        <!-- docs / az-mongo -->
+        <div class="target-card" style="border-left: 3px solid #06b6d4;">
+          <div class="card-header" style="margin-bottom:6px">
+            <div class="icon icon-app" style="width:28px;height:28px;font-size:14px;">📄</div>
+            <div>
+              <div class="target-title">Azure Container Apps (docs)</div>
+              <div class="target-detail">← az-mongo remote state output</div>
+            </div>
+          </div>
+          <div class="badge-row">
+            <span class="badge badge-blue">docs.mysak.fun</span>
+          </div>
+          <div class="target-repo">
+            repo: <a>az-mongo</a> · FQDN via remote state output
           </div>
         </div>
 
@@ -526,7 +552,7 @@
     <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div> Terraform IaC</div>
     <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div> Pending / TODO</div>
     <div class="legend-item" style="margin-left:12px; color:#475569; font-size:0.68rem;">
-      Generated 2026-05-12 · repo: az-dns-mysak
+      Generated 2026-05-19 · repo: az-dns-mysak
     </div>
   </div>
 
