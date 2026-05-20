@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 4.0"
+    }
   }
 }
 
@@ -128,4 +132,30 @@ resource "azurerm_dns_cname_record" "aws_penny_cert_validation" {
 output "nameservers" {
   value       = azurerm_dns_zone.mysak_fun.name_servers
   description = "Nameservery ke zkopírování do WEDOS"
+}
+
+# ── Cloudflare ────────────────────────────────────────────────────────────────
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
+}
+
+data "cloudflare_zone" "mysak_fun" {
+  name = "mysak.fun"
+}
+
+resource "cloudflare_record" "azure_seip" {
+  zone_id = data.cloudflare_zone.mysak_fun.id
+  name    = "azure-seip"
+  value   = var.azure_seip_nginx_ip
+  type    = "A"
+  ttl     = 1 # 1 = automatic (required when proxied)
+  proxied = true
+}
+
+resource "cloudflare_zone_settings_override" "mysak_fun" {
+  zone_id = data.cloudflare_zone.mysak_fun.id
+  settings {
+    ssl = "full" # origin has valid Let's Encrypt cert; use "strict" to also verify chain
+  }
 }

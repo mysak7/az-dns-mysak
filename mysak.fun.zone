@@ -27,9 +27,9 @@ cloudfire       300  IN  CNAME  mi-3-cloudfire-y29hf3.azurewebsites.net.
 asuid.cloudfire 300  IN  TXT    "24C4FD8D3A8507E43D386A411379665BC15579939C271A26E15AE5643A8A540A"
 
 ; ── azure-seip (AKS SEIP cluster — azure-seip, nginx ingress IP) ─────────────
-; DNS only. Path-based routing: /manager, /models, /orchestrator, / → gui-easy
-; IP is dynamic (nginx LB), managed via terraform in azure-seip/infra/terraform/environments/dev
-azure-seip      300  IN  A      <placeholder — fill from `terraform output nginx_ingress_ip` in azure-seip>
+; Proxied (orange cloud). Path-based routing: /manager, /models, /orchestrator, / → gui-easy
+; IP managed via cloudflare_record.azure_seip in this Terraform project (var.azure_seip_nginx_ip)
+azure-seip      300  IN  A      20.103.44.124
 
 ; ── docs (Azure Container Apps — az-mongo) ───────────────────────────────────
 ; DNS only (no Cloudflare proxy — Container Apps custom domain verification requires direct CNAME)
